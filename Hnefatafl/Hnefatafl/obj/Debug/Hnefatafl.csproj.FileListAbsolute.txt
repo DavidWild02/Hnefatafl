@@ -1,0 +1,6 @@
+H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\obj\Debug\Hnefatafl.csprojResolveAssemblyReference.cache
+H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\bin\Debug\Hnefatafl.exe.config
+H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\bin\Debug\Hnefatafl.exe
+H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\bin\Debug\Hnefatafl.pdb
+H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\obj\Debug\Hnefatafl.exe
+H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\obj\Debug\Hnefatafl.pdb
