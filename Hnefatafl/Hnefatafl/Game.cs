@@ -1,12 +1,4 @@
-﻿/*
- * Created by SharpDevelop.
- * User: WiDa0502
- * Date: 23.04.2021
- * Time: 09:18
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-using System;
+﻿using System;
 using System.Linq;
 
 namespace Hnefatafl
@@ -84,25 +76,29 @@ namespace Hnefatafl
 			}
 			if (piece == Field.King && board[destx, desty] == Field.Finish) {
 				Console.WriteLine("The King escapes succesfully");
-			}
+			} else if (piece == Field.King && board[destx, desty] == Field.Throne) {
+				board[destx, desty] = Field.ThroneWithKing;
+				return;
+           }
 			board[destx, desty] = piece;
 		}
 		
 		private void evaluateKingCaptcher(int x, int y) {
 			if (board[x, y] != Field.King) return;
 			
+			Field[] surrounders = {Field.Attacker, Field.Finish, Field.Throne};
 			int numSurrounders = 0;
 			if (x != 0 ) {
-				if (board[x-1, y] == Field.Attacker) numSurrounders++;
+				if (surrounders.Contains(board[x-1, y])) numSurrounders++;
 			} else numSurrounders++;
 			if (x != 10 ) {
-				if (board[x+1, y] == Field.Attacker) numSurrounders++;
+				if (surrounders.Contains(board[x+1, y])) numSurrounders++;
 			} else numSurrounders++;
 			if (y != 0 ) {
-				if (board[x, y-1] == Field.Attacker) numSurrounders++;
+				if (surrounders.Contains(board[x, y-1])) numSurrounders++;
 			} else numSurrounders++;
 			if (y != 10 ) {
-				if (board[x, y+1] == Field.Attacker) numSurrounders++;
+				if (surrounders.Contains(board[x, y+1])) numSurrounders++;
 			} else numSurrounders++;
 			
 			if (numSurrounders == 4) {
@@ -156,20 +152,32 @@ namespace Hnefatafl
 			this.BlackMove = !this.BlackMove;
 		}
 		
+		private void drawSeperatorLine() {
+			Console.ForegroundColor = ConsoleColor.Gray;
+			Console.Write("+");
+			for (int j = 0; j < 11; j++) {
+				Console.Write("---+");
+			}
+			Console.WriteLine();
+		}
+		
 		public void print() {
+			drawSeperatorLine();
 			for (int i = 0; i < 11; i++) {
+				Console.ForegroundColor = ConsoleColor.Gray;
+				Console.Write("| ");
 				for (int j = 0; j < 11; j++) {
+					Console.ForegroundColor = ConsoleColor.White;
 					switch (this.board[i, j]) {
 						case Field.King:
 						case Field.ThroneWithKing:
 							Console.Write('K');
 							break;
 						case Field.Attacker:
-							Console.ForegroundColor = ConsoleColor.DarkRed; 
+							Console.ForegroundColor = ConsoleColor.DarkRed;
 							Console.Write('O');
-							Console.ForegroundColor = ConsoleColor.White; 
 							break;							
-						case Field.Protector:
+						case Field.Protector:		
 							Console.Write('O');
 							break;
 						case Field.Empty:
@@ -185,17 +193,19 @@ namespace Hnefatafl
 							break;	
 					}
 					Console.ForegroundColor = ConsoleColor.Gray;
-					Console.Write('|');
-					Console.ForegroundColor = ConsoleColor.White;
-				}
-				Console.Write("\n");
-				Console.ForegroundColor = ConsoleColor.Gray;
-				for (int j = 0; j < 11; j++) {
-					Console.Write("-+");
+					Console.Write(" | ");	
 				}
 				Console.ForegroundColor = ConsoleColor.White;
+				Console.Write((char)(65 + i));
 				Console.Write("\n");
+				drawSeperatorLine();
 			}
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.Write("  ");
+			for (int i = 0; i < 11; i++) {
+				Console.Write(i + "   ");
+			}
+			Console.WriteLine();
 		}
 		
 		private void initBoard() {
