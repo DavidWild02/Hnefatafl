@@ -4,60 +4,115 @@ using System.Linq;
 
 namespace Hnefatafl
 {
-	class Program
+    public struct Position
+    {
+        public int x;
+        public int y;
+    }
+
+    class Program
 	{
-		struct Move {
-			public int x;
-			public int y;
-			public int destx;
-			public int desty;
-		}
-		
-		public static Move parseMove(string s) {
-			string[] positions = s.ToUpper().Trim().Split(new string[] {"=>"}, 2, StringSplitOptions.RemoveEmptyEntries);
-			Move move;
-			if (Enumerable.Range('A', 'K').Contains(positions[0][0])) {
-				move.y = (int)positions[0][0] - 65;
-			} else {
-				throw Exception("y position not in range of A-K. y must be before x");
-			}
-			if (Enumerable.Range('A', 'K').Contains(positions[1][0])) {
-				move.desty = (int)positions[1][0] - 65;
-			} else {
-				throw Exception("desty position not in range of A-K. desty must be before destx");
-			}
-			try {
-				positions[0].Remove(0);
-				positions[1].Remove(0);
-				move.x = Convert.ToInt32(positions[0]);
-				move.destx = Convert.ToInt32(positions[1]);
-				return move;
-			}
-			catch (Exception e) {
-				Console.WriteLine(e.Message);
-				throw Exception("Was not able to Convert the x and destx positions");
-			}
-		}
-		
-		public static void Main(string[] args)
-		{
-			Game game = new Game();
-			game.print();
-			Console.Write("Enter the moves (\n\n\nFormat COL ROW => COL ROW dest)\n");
-			
-			int origRow;
-			int origCol;
-			while (true) {
-				origRow = Console.CursorTop;
-				origCol = Console.CursorLeft;
-				Console.SetCursorPosition(0, 0);
-				game.print();
-				Console.SetCursorPosition(origCol, origRow);
-				
-			}
-			
-			
-			
+        public static void Main(string[] args) {
+            Position cursor = new Position();
+            Game game = new Game();
+
+            game.printBoard();
+
+            while (true)
+            {
+                cursor.x = cursor.y = 5;
+                game.printField(cursor, Selection.Hovered);
+                Position? source = null, dest = null;
+
+                // Getting the move input
+                while (true)
+                {
+                    ConsoleKey key = HiddenReader.readKey().Key;
+                    if (key == ConsoleKey.Enter)
+                    {
+                        if (source == null)
+                        {
+                            source = cursor;
+                            Console.CursorLeft--;
+                            game.printField(cursor, Selection.Selected);
+                        }
+                        else if (source.Equals(cursor))
+                        {
+                            source = null;
+                            Console.CursorLeft--;
+                            game.printField(cursor, Selection.Hovered);
+                        }
+                        else if (dest == null)
+                        {
+                            dest = cursor;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        Position cPrevPos = cursor;
+                        switch (key)
+                        {
+                            case ConsoleKey.UpArrow:
+                                if (cursor.y == 0) continue;
+                                cursor.y--;
+                                break;
+                            case ConsoleKey.DownArrow:
+                                if (cursor.y == 10) continue;
+                                cursor.y++;
+                                break;
+                            case ConsoleKey.LeftArrow:
+                                if (cursor.x == 0) continue;
+                                cursor.x--;
+                                break;
+                            case ConsoleKey.RightArrow:
+                                if (cursor.x == 10) continue;
+                                cursor.x++;
+                                break;
+                            default:
+                                continue;
+                        }
+                        
+                        if (source != null)
+                        {
+                            game.printField(cPrevPos, (source.Equals(cPrevPos)) ? Selection.Selected : Selection.Normal);
+                            game.printField(cursor, (source.Equals(cursor)) ? Selection.Selected : Selection.Hovered);
+                        } else
+                        {
+                            game.printField(cPrevPos, Selection.Normal);
+                            game.printField(cursor, Selection.Hovered);
+                        }
+                    }
+                }
+
+                Position source_ = source.Value, dest_ = dest.Value;
+
+
+                // Validating the Move
+                if (!game.isValidMove(source_.x, source_.y, dest_.x, dest_.y))
+                {
+                    game.printField(source_, Selection.Normal);
+                    game.printField(dest_, Selection.Normal);
+                    continue;
+                }
+
+                // Executing and Evaluating
+                game.move(source_.x, source_.y, dest_.x, dest_.y);
+
+                game.printField(source_, Selection.Normal);
+                game.printField(dest_, Selection.Normal);
+
+                if (game.Victory)
+                {
+                    Console.CursorTop = 22;
+                    Console.CursorLeft = 0;
+                    Console.WriteLine("\n\n");
+                    Console.WriteLine(game.BlackMove ? "The King gets killed!\nThe Attackers win!" : "The King escapes!\nThe Defenders win!");
+                    break;
+                }
+
+                game.next();
+            }
 
 			Console.ReadKey(true);
 		}

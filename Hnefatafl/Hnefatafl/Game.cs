@@ -12,21 +12,67 @@ namespace Hnefatafl
 		Throne,
 		ThroneWithKing,
 	}
-	/// <summary>
-	/// Description of Game.
-	/// </summary>
-	/// 
-	public class Game
+
+    public enum Selection
+    {
+        Normal,
+        Hovered,
+        Selected,
+    }
+    /// <summary>
+    /// Description of Game.
+    /// </summary>
+    /// 
+    public class Game
 	{
-		private Field[,] board = new Field[11, 11];
-		private bool BlackMove = true;
+        public bool Victory { private set; get; }
+        public bool BlackMove { private set; get; }
+
+        private Field[,] board = new Field[11, 11];
 		
+
 		public Game()
 		{
-			this.initBoard();
+			this.initGame();
 		}
-		
-		public bool isValidMove(int x, int y, int destx, int desty) {
+
+
+        public void initGame()
+        {
+            for (int i = 0; i < 11; i++)
+            {
+                for (int j = 0; j < 11; j++)
+                {
+                    this.board[i, j] = Field.Empty;
+                }
+            }
+
+            this.board[0, 0] = this.board[0, 10] = this.board[10, 0] = this.board[10, 10] = Field.Finish;
+
+            for (int i = 0; i < 5; i++)
+            {
+                this.board[3 + i, 0] = this.board[0, 3 + i] = Field.Attacker;
+                this.board[3 + i, 10] = this.board[10, 3 + i] = Field.Attacker;
+            }
+            this.board[5, 1] = this.board[1, 5] = this.board[5, 9] = this.board[9, 5] = Field.Attacker;
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    this.board[4 + i, 4 + j] = Field.Protector;
+                }
+            }
+            this.board[3, 5] = this.board[5, 3] = this.board[7, 5] = this.board[5, 7] = Field.Protector;
+
+            this.board[5, 5] = Field.ThroneWithKing;
+
+            this.Victory = false;
+            this.BlackMove = true;
+        }
+
+
+        public bool isValidMove(int x, int y, int destx, int desty) {
 			if ((board[x, y] == Field.Attacker && BlackMove) || 
 	   				(!BlackMove && 
 	     				(board[x, y] == Field.Protector
@@ -34,37 +80,37 @@ namespace Hnefatafl
 	                    || board[x, y] == Field.King)
 	   				)
 			   ) {
-				if (x == destx) {
+                bool allEmpty = true;
+                bool kingDirectsToFinish = (board[destx, desty] == Field.Finish && board[x, y] == Field.King && !BlackMove);
+                if (x == destx) {
 					if (desty < y) {
 						int temp = desty - 1;
 						desty = y - 1;
 						y = temp;
-					}
-					bool allEmpty = true;
-					for (int i = y + 1; i <= desty; i++) {
-						if (board[x, i] != Field.Empty) {
-							allEmpty = false;
+					}    
+                    for (int i = y + 1; i <= desty; i++) {
+						if (board[x, i] != Field.Empty && !kingDirectsToFinish) {
+                            allEmpty = false;
 						}
 					}
-					return allEmpty;
 				} else if (y == desty) {
 					if (destx < x) {
 						int temp = destx - 1;
 						destx = x - 1;
 						x = temp;
 					}
-					bool allEmpty = true;
 					for (int i = x + 1; i <= destx; i++) {
-						if (board[i, y] != Field.Empty) {
+						if (board[i, y] != Field.Empty && !kingDirectsToFinish) {
 							allEmpty = false;
 						}
 					}
-					return allEmpty;
 				}
-			}
+                return allEmpty;
+            }
 			return false;
 		}
 		
+
 		public void move(int x, int y, int destx, int desty) {
 			Field piece;
 			if (board[x, y] == Field.ThroneWithKing) {
@@ -75,14 +121,16 @@ namespace Hnefatafl
 				board[x, y] = Field.Empty;
 			}
 			if (piece == Field.King && board[destx, desty] == Field.Finish) {
-				Console.WriteLine("The King escapes succesfully");
+                this.Victory = true;
 			} else if (piece == Field.King && board[destx, desty] == Field.Throne) {
 				board[destx, desty] = Field.ThroneWithKing;
 				return;
            }
 			board[destx, desty] = piece;
+            evaluate(destx, desty);
 		}
 		
+
 		private void evaluateKingCaptcher(int x, int y) {
 			if (board[x, y] != Field.King) return;
 			
@@ -102,16 +150,18 @@ namespace Hnefatafl
 			} else numSurrounders++;
 			
 			if (numSurrounders == 4) {
-				Console.WriteLine("The Attackers win!");
+                this.Victory = true;
 		    }
 		}
 		
+
 		private void evaluateCaptcher(int x, int y, int xHelper, int yHelper, Field[] helpers, Field enemy) {
 			if (board[x, y] == enemy && helpers.Contains(board[xHelper, yHelper])) {
 				board[x, y] = Field.Empty;
 			}
 		}
 		
+
 		private void evaluate(int x, int y) {
 			if (BlackMove) {
 				Field[] helpers = {Field.Attacker, Field.Throne, Field.Finish};
@@ -148,10 +198,12 @@ namespace Hnefatafl
 			}
 		}
 		
+
 		public void next() {
 			this.BlackMove = !this.BlackMove;
 		}
 		
+
 		private void drawSeperatorLine() {
 			Console.ForegroundColor = ConsoleColor.Gray;
 			Console.Write("+");
@@ -161,38 +213,17 @@ namespace Hnefatafl
 			Console.WriteLine();
 		}
 		
-		public void print() {
+
+		public void printBoard() {
 			drawSeperatorLine();
 			for (int i = 0; i < 11; i++) {
+                Console.BackgroundColor = ConsoleColor.Black;
 				Console.ForegroundColor = ConsoleColor.Gray;
 				Console.Write("| ");
 				for (int j = 0; j < 11; j++) {
-					Console.ForegroundColor = ConsoleColor.White;
-					switch (this.board[i, j]) {
-						case Field.King:
-						case Field.ThroneWithKing:
-							Console.Write('K');
-							break;
-						case Field.Attacker:
-							Console.ForegroundColor = ConsoleColor.DarkRed;
-							Console.Write('O');
-							break;							
-						case Field.Protector:		
-							Console.Write('O');
-							break;
-						case Field.Empty:
-							Console.Write(' ');
-							break;
-						case Field.Finish:
-						case Field.Throne:
-							Console.ForegroundColor = ConsoleColor.Black;
-							Console.BackgroundColor = ConsoleColor.White; 
-							Console.Write('X');
-							Console.ForegroundColor = ConsoleColor.White;
-							Console.BackgroundColor = ConsoleColor.Black; 
-							break;	
-					}
-					Console.ForegroundColor = ConsoleColor.Gray;
+                    this.printField(i, j, Selection.Normal);
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.ForegroundColor = ConsoleColor.Gray;
 					Console.Write(" | ");	
 				}
 				Console.ForegroundColor = ConsoleColor.White;
@@ -207,30 +238,55 @@ namespace Hnefatafl
 			}
 			Console.WriteLine();
 		}
-		
-		private void initBoard() {
-			for (int i = 0; i < 11; i++) {
-				for (int j = 0; j < 11; j++) {
-					this.board[i, j] = Field.Empty;
-				}
-			}
-			
-			this.board[0,0] = this.board[0,10] = this.board[10, 0] = this.board[10, 10] = Field.Finish;
-			
-			for (int i = 0; i < 5; i++) {
-				this.board[3 + i, 0] = this.board[0, 3 + i] = Field.Attacker;
-				this.board[3 + i, 10] = this.board[10, 3 + i] = Field.Attacker;
-			}
-			this.board[5, 1] = this.board[1, 5] = this.board[5, 9] = this.board[9, 5] = Field.Attacker;
-			
-			for (int i = 0; i < 3; i++) {
-				for (int j = 0; j < 3; j++) {
-					this.board[4 + i, 4 + j] = Field.Protector;
-				}
-			}
-			this.board[3, 5] = this.board[5, 3] = this.board[7, 5] = this.board[5, 7] = Field.Protector;
-			
-			this.board[5, 5] = Field.ThroneWithKing;
-		}
+
+        
+        public void printField(Position pos, Selection sel)
+        {
+            Console.CursorTop = 1 + 2 * pos.y;
+            Console.CursorLeft = 2 + 4 * pos.x;
+
+            this.printField(pos.x, pos.y, sel);
+        }
+
+
+        private void printField(int x, int y, Selection selection)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            switch (selection)
+            {
+                case Selection.Normal:
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    break;
+                case Selection.Hovered:
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    break;
+                case Selection.Selected:
+                    Console.BackgroundColor = ConsoleColor.DarkYellow;
+                    break;
+            }
+            switch (this.board[x, y])
+            {
+                case Field.King:
+                case Field.ThroneWithKing:
+                    Console.Write('K');
+                    break;
+                case Field.Attacker:
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.Write('O');
+                    break;
+                case Field.Protector:
+                    Console.Write('O');
+                    break;
+                case Field.Empty:
+                    Console.Write(' ');
+                    break;
+                case Field.Finish:
+                case Field.Throne:
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    if (selection == Selection.Normal) Console.BackgroundColor = ConsoleColor.White;
+                    Console.Write('X');                 
+                    break;
+            }
+        }
 	}
 }

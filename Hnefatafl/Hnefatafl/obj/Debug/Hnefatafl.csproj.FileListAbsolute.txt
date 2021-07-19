@@ -4,3 +4,9 @@ H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\bin\Debug\Hnefatafl.exe
 H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\bin\Debug\Hnefatafl.pdb
 H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\obj\Debug\Hnefatafl.exe
 H:\Documents\SharpDevelop Projects\Hnefatafl\Hnefatafl\obj\Debug\Hnefatafl.pdb
+C:\Users\User\Documents\Visual Studio 2015\Projects\Hnefatafl\Hnefatafl\Hnefatafl\bin\Debug\Hnefatafl.exe.config
+C:\Users\User\Documents\Visual Studio 2015\Projects\Hnefatafl\Hnefatafl\Hnefatafl\bin\Debug\Hnefatafl.exe
+C:\Users\User\Documents\Visual Studio 2015\Projects\Hnefatafl\Hnefatafl\Hnefatafl\bin\Debug\Hnefatafl.pdb
+C:\Users\User\Documents\Visual Studio 2015\Projects\Hnefatafl\Hnefatafl\Hnefatafl\obj\Debug\Hnefatafl.exe
+C:\Users\User\Documents\Visual Studio 2015\Projects\Hnefatafl\Hnefatafl\Hnefatafl\obj\Debug\Hnefatafl.pdb
+C:\Users\User\Documents\Visual Studio 2015\Projects\Hnefatafl\Hnefatafl\Hnefatafl\obj\Debug\Hnefatafl.csprojResolveAssemblyReference.cache
